@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Desarme a Bomba Matemática 2.0</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Estilos personalizados para aprimorar o visual do jogo */
+        :root {
+            --primary-color: #ff4757;
+            --dark-bg: #1a1a2e;
+            --light-bg: #1f1f3a;
+            --text-color: #e0e0e0;
+            --success-color: #2ecc71;
+            --font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden; /* Evita barras de rolagem durante animações */
+        }
+
+        .game-container {
+            background-color: var(--light-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        .btn-start {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+        }
+
+        .btn-start:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 71, 87, 0.6);
+        }
+
+        /* Estilos para os Modais do Bootstrap */
+        .modal-content {
+            background-color: var(--light-bg);
+            border: 1px solid var(--primary-color);
+            border-radius: 15px;
+        }
+
+        .modal-header, .modal-footer {
+            border-bottom: 1px solid #333;
+            border-top: 1px solid #333;
+        }
+        
+        .modal-title {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .answer-btn {
+            width: 100%;
+            margin: 8px 0;
+            font-size: 1.1rem;
+        }
+        
+        .progress-bar {
+            background-color: var(--primary-color);
+            transition: width 1s linear !important;
+        }
+
+        /* Animação de Explosão Melhorada */
+        @keyframes screen-shake {
+            0% { transform: translate(0, 0) rotate(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translate(-5px, 5px) rotate(-1deg); }
+            20%, 40%, 60%, 80% { transform: translate(5px, -5px) rotate(1deg); }
+            100% { transform: translate(0, 0) rotate(0); }
+        }
+
+        .explode-animation {
+            animation: screen-shake 0.5s ease-in-out;
+        }
+
+        /* Estilos para o Ranking */
+        .ranking-table {
+            color: var(--text-color);
+        }
+        .ranking-table th {
+            color: var(--primary-color);
+        }
+        .ranking-table tbody tr:nth-child(odd) {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+        .ranking-table tbody tr:hover {
+            background-color: rgba(255, 71, 87, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container" id="startScreen">
+        <h1 class="display-4 fw-bold text-danger mb-3">Desarme a Bomba 💣</h1>
+        <p class="lead mb-4">Responda corretamente antes que o tempo se esgote para evitar a explosão!</p>
+        <button class="btn btn-start btn-lg" onclick="showNameModal()">Iniciar Jogo</button>
+        <button class="btn btn-outline-light btn-lg mt-3" onclick="showRanking()">Ver Ranking</button>
+    </div>
+
+    <div class="modal fade" id="nameModal" tabindex="-1" aria-labelledby="nameModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nameModalLabel">Qual o seu nome?</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="playerNameInput" class="form-label">Nome:</label>
+                        <input type="text" class="form-control" id="playerNameInput" placeholder="Digite seu nome aqui" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="startGameWithNameBtn">Começar!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="questionModal" tabindex="-1" aria-labelledby="questionModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="questionModalLabel">Questão <span id="questionCount"></span></h5>
+                </div>
+                <div class="modal-body">
+                    <p class="lead fs-4" id="questionText"></p>
+                    <div class="d-grid gap-2" id="answersContainer">
+                        </div>
+                    <div class="progress mt-4" style="height: 10px;">
+                        <div id="timerBar" class="progress-bar" role="progressbar" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center">
+                <div class="modal-body p-5">
+                    <h2 class="display-3" id="resultIcon"></h2>
+                    <h3 class="my-3" id="resultTitle"></h3>
+                    <p class="lead" id="resultMessage"></p>
+                    <button class="btn btn-start mt-3" onclick="restartGame()">Jogar Novamente</button>
+                    <button class="btn btn-outline-info mt-3 ms-2" onclick="showRankingFromResults()">Ver Ranking</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="rankingModal" tabindex="-1" aria-labelledby="rankingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rankingModalLabel">Ranking dos Melhores Desarmadores 🏆</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-hover ranking-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Nome</th>
+                                <th scope="col">Acertos</th>
+                                <th scope="col">Tempo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rankingTableBody">
+                            </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // --- CONFIGURAÇÕES DO JOGO ---
+        const questions = [
+            { question: 'Quanto é 9 × 8?', options: ['72', '81', '64', '78'], correct: '72' },
+            { question: 'Qual a raiz quadrada de 144?', options: ['12', '11', '13', '14'], correct: '12' },
+            { question: 'Quanto é 55 - 18?', options: ['37', '47', '33', '43'], correct: '37' },
+            { question: 'Qual o valor de π (pi) aproximado?', options: ['3.14', '3.12', '3.16', '3.18'], correct: '3.14' },
+            { question: 'Quanto é 125 ÷ 5?', options: ['25', '15', '35', '20'], correct: '25' }
+        ];
+        const TIME_PER_QUESTION = 10; // Segundos
+        const MAX_RANKING_ENTRIES = 10; // Limite de entradas no ranking
+
+        // --- VARIÁVEIS DE ESTADO DO JOGO ---
+        let currentQuestionIndex = 0;
+        let timerInterval;
+        let shuffledQuestions = [];
+        let score = 0;
+        let proceedingToNextQuestion = false; // Flag para controlar a transição
+        let playerName = 'Jogador'; // Nome padrão
+        let gameStartTime; // Para calcular o tempo total do jogo
+
+        // --- ELEMENTOS DO DOM E MODAIS BOOTSTRAP ---
+        const startScreen = document.getElementById('startScreen');
+        const nameModalEl = document.getElementById('nameModal');
+        const questionModalEl = document.getElementById('questionModal');
+        const resultModalEl = document.getElementById('resultModal');
+        const rankingModalEl = document.getElementById('rankingModal');
+
+        const nameModal = new bootstrap.Modal(nameModalEl);
+        const questionModal = new bootstrap.Modal(questionModalEl);
+        const resultModal = new bootstrap.Modal(resultModalEl);
+        const rankingModal = new bootstrap.Modal(rankingModalEl);
+
+        const playerNameInput = document.getElementById('playerNameInput');
+        const startGameWithNameBtn = document.getElementById('startGameWithNameBtn');
+        const questionCountEl = document.getElementById('questionCount');
+        const questionTextEl = document.getElementById('questionText');
+        const answersContainerEl = document.getElementById('answersContainer');
+        const timerBarEl = document.getElementById('timerBar');
+        
+        const resultIconEl = document.getElementById('resultIcon');
+        const resultTitleEl = document.getElementById('resultTitle');
+        const resultMessageEl = document.getElementById('resultMessage');
+        const rankingTableBody = document.getElementById('rankingTableBody');
+        
+        // --- LÓGICA DO JOGO ---
+
+        // Evento que dispara APÓS o modal da pergunta ser completamente escondido
+        questionModalEl.addEventListener('hidden.bs.modal', () => {
+            if (proceedingToNextQuestion) {
+                proceedingToNextQuestion = false; // Reseta a flag
+                showQuestion();
+            }
+        });
+
+        // Evento para começar o jogo após digitar o nome
+        startGameWithNameBtn.addEventListener('click', () => {
+            const inputName = playerNameInput.value.trim();
+            if (inputName) {
+                playerName = inputName;
+                nameModal.hide();
+                startGame();
+            } else {
+                alert('Por favor, digite seu nome para começar!');
+                playerNameInput.focus();
+            }
+        });
+
+        function showNameModal() {
+            startScreen.classList.add('d-none');
+            playerNameInput.value = ''; // Limpa o campo do nome
+            nameModal.show();
+        }
+
+        function startGame() {
+            // Embaralha as perguntas para cada novo jogo
+            shuffledQuestions = [...questions].sort(() => Math.random() - 0.5);
+            currentQuestionIndex = 0;
+            score = 0;
+            gameStartTime = Date.now(); // Inicia o cronômetro do jogo
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentQuestionIndex >= shuffledQuestions.length) {
+                // Fim do jogo - Vitória
+                const gameEndTime = Date.now();
+                const totalTimeSeconds = ((gameEndTime - gameStartTime) / 1000).toFixed(2); // Tempo em segundos com 2 casas decimais
+                showResult(true, score, totalTimeSeconds);
+                return;
+            }
+
+            const q = shuffledQuestions[currentQuestionIndex];
+            questionCountEl.textContent = `${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+            questionTextEl.textContent = q.question;
+            answersContainerEl.innerHTML = '';
+
+            // Embaralha as opções de resposta
+            const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-outline-light', 'answer-btn');
+                button.onclick = () => checkAnswer(option, q.correct, button);
+                answersContainerEl.appendChild(button);
+            });
+            
+            questionModal.show();
+            startTimer();
+        }
+
+        function checkAnswer(selectedAnswer, correctAnswer, button) {
+            clearInterval(timerInterval);
+            
+            // Desabilita todos os botões para evitar cliques múltiplos
+            const answerButtons = answersContainerEl.querySelectorAll('.btn');
+            answerButtons.forEach(btn => btn.disabled = true);
+
+            if (selectedAnswer === correctAnswer) {
+                button.classList.remove('btn-outline-light');
+                button.classList.add('btn-success');
+                score++;
+                currentQuestionIndex++;
+                proceedingToNextQuestion = true; // Ativa a flag para o listener do 'hidden.bs.modal'
+                
+                setTimeout(() => {
+                    questionModal.hide(); // Apenas esconde o modal. O listener fará o resto.
+                }, 1000);
+
+            } else {
+                button.classList.remove('btn-outline-light');
+                button.classList.add('btn-danger');
+                
+                // Mostra qual era a resposta correta
+                answerButtons.forEach(btn => {
+                    if (btn.textContent === correctAnswer) {
+                        btn.classList.remove('btn-outline-light');
+                        btn.classList.add('btn-success');
+                    }
+                });
+
+                setTimeout(() => {
+                    questionModal.hide();
+                    showResult(false, score, 0, 'Resposta errada!'); // Tempo 0 pois não terminou com sucesso
+                }, 1500);
+            }
+        }
+
+        function startTimer() {
+            let timeLeft = TIME_PER_QUESTION;
+            timerBarEl.style.width = '100%';
+            timerBarEl.className = 'progress-bar bg-primary'; // Reseta as cores
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const percentage = (timeLeft / TIME_PER_QUESTION) * 100;
+                timerBarEl.style.width = `${percentage}%`;
+
+                if (percentage < 50 && percentage > 20) {
+                    timerBarEl.classList.remove('bg-primary');
+                    timerBarEl.classList.add('bg-warning');
+                } else if(percentage <= 20) {
+                    timerBarEl.classList.remove('bg-warning');
+                    timerBarEl.classList.add('bg-danger');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    questionModal.hide();
+                    showResult(false, score, 0, 'O tempo acabou!'); // Tempo 0 pois não terminou com sucesso
+                }
+            }, 1000);
+        }
+        
+        function showResult(isSuccess, finalScore, totalTime, message = '') {
+            if (isSuccess) {
+                resultIconEl.textContent = '🎉';
+                resultTitleEl.textContent = 'Bomba Desarmada!';
+                resultMessageEl.textContent = `Parabéns, ${playerName}! Você acertou ${finalScore} de ${shuffledQuestions.length} questões em ${totalTime} segundos.`;
+                resultTitleEl.classList.remove('text-danger');
+                resultTitleEl.classList.add('text-success');
+                launchConfetti();
+                saveRanking(playerName, finalScore, totalTime); // Salva o resultado no ranking
+            } else {
+                document.body.classList.add('explode-animation');
+                resultIconEl.textContent = '💥';
+                resultTitleEl.textContent = 'BOOM!';
+                resultMessageEl.textContent = `${message} Você acertou ${finalScore} de ${shuffledQuestions.length} questões.`;
+                resultTitleEl.classList.remove('text-success');
+                resultTitleEl.classList.add('text-danger');
+            }
+            resultModal.show();
+        }
+        
+        function restartGame() {
+            resultModal.hide();
+            // Ao invés de mostrar o startScreen, volta para o modal de nome
+            showNameModal(); 
+            document.body.classList.remove('explode-animation');
+        }
+
+        // --- FUNÇÕES DE RANKING ---
+        function getRanking() {
+            const ranking = localStorage.getItem('bombRanking');
+            return ranking ? JSON.parse(ranking) : [];
+        }
+
+        function saveRanking(name, score, time) {
+            let ranking = getRanking();
+            const newEntry = {
+                name: name,
+                score: score,
+                time: parseFloat(time), // Garante que o tempo seja um número
+                date: new Date().toISOString()
+            };
+
+            // Se o jogo não foi um sucesso (bomba explodiu), não adiciona ao ranking principal.
+            // Apenas adicionamos se o jogador desarmou a bomba (isSuccess = true)
+            // No entanto, se o objetivo é "velocidade de acerto e quantidade",
+            // mesmo errando, o acerto é contado. Vamos manter como estava antes,
+            // registrando apenas se o jogo foi concluído com sucesso (todas as questões desarmadas).
+            // Se você quiser rankear quem fez mais acertos mesmo se a bomba explodir, me avise.
+            if (score === questions.length) { // Apenas salva se acertou todas as questões
+                 ranking.push(newEntry);
+            }
+           
+            // Ordena o ranking:
+            // 1. Por pontuação (acertos) em ordem decrescente
+            // 2. Por tempo em ordem crescente (para desempate de pontuação)
+            ranking.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score; // Mais acertos primeiro
+                }
+                return a.time - b.time; // Menor tempo primeiro
+            });
+
+            // Limita o número de entradas no ranking
+            if (ranking.length > MAX_RANKING_ENTRIES) {
+                ranking = ranking.slice(0, MAX_RANKING_ENTRIES);
+            }
+
+            localStorage.setItem('bombRanking', JSON.stringify(ranking));
+            console.log('Ranking atualizado:', ranking); // Para depuração
+        }
+
+        function showRanking() {
+            // Esta função é chamada do startScreen
+            const ranking = getRanking();
+            rankingTableBody.innerHTML = ''; // Limpa a tabela
+
+            if (ranking.length === 0) {
+                rankingTableBody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhum recorde ainda. Seja o primeiro!</td></tr>';
+            } else {
+                ranking.forEach((entry, index) => {
+                    const row = rankingTableBody.insertRow();
+                    row.innerHTML = `
+                        <th scope="row">${index + 1}</th>
+                        <td>${entry.name}</td>
+                        <td>${entry.score}</td>
+                        <td>${entry.time.toFixed(2)}s</td>
+                    `;
+                });
+            }
+            // Não esconde resultModal aqui, pois pode não estar visível
+            rankingModal.show();
+        }
+
+        function showRankingFromResults() {
+            // Nova função para ser chamada do resultModal
+            resultModal.hide(); // Esconde o modal de resultados
+            showRanking(); // Chama a função que popula e mostra o ranking
+        }
+
+
+        // --- EFEITOS VISUAIS ---
+        function launchConfetti() {
+            const duration = 2 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1056 }; // zIndex maior que o do modal
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                // Lança confetes de ambos os lados da tela
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+
+            }, 250);
+        }
+
+    </script>
+</body>
+</html>
