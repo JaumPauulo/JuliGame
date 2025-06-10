@@ -13,12 +13,14 @@
     <style>
         /* Estilos personalizados para aprimorar o visual do jogo */
         :root {
-            --primary-color: #ff4757;
-            --dark-bg: #1a1a2e;
-            --light-bg: #1f1f3a;
-            --text-color: #e0e0e0;
-            --success-color: #2ecc71;
+            --primary-color: #ff4757; /* Vermelho vibrante */
+            --dark-bg: #1a1a2e; /* Azul escuro profundo */
+            --light-bg: #1f1f3a; /* Azul escuro ligeiramente mais claro */
+            --text-color: #e0e0e0; /* Cinza claro para o texto */
+            --success-color: #2ecc71; /* Verde para sucesso */
+            --info-color: #3498db; /* Azul para informações/dicas */
             --font-family: 'Poppins', sans-serif;
+            --border-color: #333; /* Cor para bordas sutis */
         }
 
         body {
@@ -42,6 +44,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             border: 2px solid var(--primary-color);
             transition: transform 0.3s ease;
+            position: relative; 
         }
 
         .btn-start {
@@ -68,14 +71,18 @@
         }
 
         .modal-header, .modal-footer {
-            border-bottom: 1px solid #333;
-            border-top: 1px solid #333;
+            border-bottom: 1px solid var(--border-color);
+            border-top: 1px solid var(--border-color);
         }
         
         .modal-title {
             color: var(--primary-color);
             font-weight: 700;
         }
+        .modal-header .btn-close {
+            filter: invert(1); /* Deixa o X branco */
+        }
+
 
         .answer-btn {
             width: 100%;
@@ -113,6 +120,81 @@
         .ranking-table tbody tr:hover {
             background-color: rgba(255, 71, 87, 0.1);
         }
+        .ranking-table .completed-game {
+            background-color: rgba(46, 204, 113, 0.2) !important; /* Sucesso */
+            font-weight: bold;
+        }
+
+        /* Cores dos botões de dificuldade personalizados */
+        .btn-difficulty {
+            background-color: var(--light-bg); /* Fundo padrão do container */
+            color: var(--primary-color); /* Texto vermelho */
+            border: 2px solid var(--primary-color); /* Borda vermelha */
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .btn-difficulty:hover {
+            background-color: var(--primary-color); /* Fundo vermelho no hover */
+            color: white; /* Texto branco no hover */
+            border-color: var(--primary-color); /* Borda vermelha no hover */
+        }
+        /* Cor específica para o nível professor */
+        .btn-difficulty[data-difficulty="professor"] {
+            color: var(--info-color);
+            border-color: var(--info-color);
+        }
+        .btn-difficulty[data-difficulty="professor"]:hover {
+            background-color: var(--info-color);
+            color: white;
+        }
+
+        /* Botões de opção de resposta */
+        .answer-btn.btn-outline-light {
+            border-color: var(--text-color);
+            color: var(--text-color);
+        }
+        .answer-btn.btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Estilo para o botão de apagar dados mais discreto e fora do modal */
+        .btn-clear-data {
+            position: fixed; /* Posição fixa na viewport */
+            bottom: 15px;
+            right: 15px; /* Posicionado no canto inferior direito */
+            font-size: 1.8rem; /* Tamanho maior para o ícone */
+            padding: 5px 10px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.3); /* Mais discreto */
+            border: none; /* Sem borda inicial */
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            z-index: 1000; /* Garante que esteja acima de outros elementos, mas abaixo dos modais */
+        }
+        .btn-clear-data:hover {
+            color: var(--primary-color);
+            transform: scale(1.1); /* Um pequeno zoom no hover */
+            background-color: rgba(255, 71, 87, 0.05); /* Fundo sutil no hover */
+        }
+
+        /* Estilo para o alerta de modo admin */
+        .admin-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #2ecc71; /* Verde */
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 1060; /* Acima de outros modais */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .admin-alert.show {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -120,8 +202,15 @@
     <div class="game-container" id="startScreen">
         <h1 class="display-4 fw-bold text-danger mb-3">Desarme a Bomba 💣</h1>
         <p class="lead mb-4">Responda corretamente antes que o tempo se esgote para evitar a explosão!</p>
-        <button class="btn btn-start btn-lg" onclick="showNameModal()">Iniciar Jogo</button>
-        <button class="btn btn-outline-light btn-lg mt-3" onclick="showRanking()">Ver Ranking</button>
+        <div class="d-grid gap-3 col-8 mx-auto mt-4"> <button class="btn btn-start btn-lg" onclick="showNameModal()">Iniciar Jogo</button>
+            <button class="btn btn-outline-light btn-lg" onclick="showRanking()">Ver Ranking</button>
+        </div>
+    </div>
+
+    <button class="btn btn-clear-data" onclick="clearAllData()" title="Apagar todos os dados salvos">🗑️</button>
+
+    <div id="adminModeAlert" class="admin-alert">
+        Modo Admin Ativado!
     </div>
 
     <div class="modal fade" id="nameModal" tabindex="-1" aria-labelledby="nameModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -137,7 +226,40 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="startGameWithNameBtn">Começar!</button>
+                    <button type="button" class="btn btn-primary" id="continueToDifficultyBtn">Continuar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmPlayerModal" tabindex="-1" aria-labelledby="confirmPlayerModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmPlayerModalLabel">Bem-vindo(a) de volta!</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="lead">Deseja continuar como <strong id="lastPlayerNameText"></strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="changePlayerNameBtn">Mudar Nome</button>
+                    <button type="button" class="btn btn-primary" id="continueWithLastPlayerBtn">Sim, continuar!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="difficultyModal" tabindex="-1" aria-labelledby="difficultyModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="difficultyModalLabel">Escolha a Dificuldade</h5>
+                </div>
+                <div class="modal-body d-grid gap-3">
+                    <button class="btn btn-lg btn-difficulty" data-difficulty="facil">Fácil (5 questões)</button>
+                    <button class="btn btn-lg btn-difficulty" data-difficulty="medio">Médio (10 questões)</button>
+                    <button class="btn btn-lg btn-difficulty" data-difficulty="dificil">Difícil (20 questões)</button>
+                    <button class="btn btn-lg btn-difficulty" data-difficulty="professor">Nível Professor (5 questões avançadas)</button>
                 </div>
             </div>
         </div>
@@ -148,6 +270,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="questionModalLabel">Questão <span id="questionCount"></span></h5>
+                    <button class="btn btn-info btn-sm ms-auto" id="hintButton">Dica</button>
                 </div>
                 <div class="modal-body">
                     <p class="lead fs-4" id="questionText"></p>
@@ -161,6 +284,24 @@
         </div>
     </div>
     
+    <div class="modal fade" id="hintModal" tabindex="-1" aria-labelledby="hintModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="hintModalLabel">Dica! 🤔</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="hintText"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Entendi!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content text-center">
@@ -189,7 +330,9 @@
                                 <th scope="col">#</th>
                                 <th scope="col">Nome</th>
                                 <th scope="col">Acertos</th>
+                                <th scope="col">Total</th>
                                 <th scope="col">Tempo</th>
+                                <th scope="col">Dificuldade</th>
                             </tr>
                         </thead>
                         <tbody id="rankingTableBody">
@@ -209,14 +352,76 @@
 
     <script>
         // --- CONFIGURAÇÕES DO JOGO ---
-        const questions = [
-            { question: 'Quanto é 9 × 8?', options: ['72', '81', '64', '78'], correct: '72' },
-            { question: 'Qual a raiz quadrada de 144?', options: ['12', '11', '13', '14'], correct: '12' },
-            { question: 'Quanto é 55 - 18?', options: ['37', '47', '33', '43'], correct: '37' },
-            { question: 'Qual o valor de π (pi) aproximado?', options: ['3.14', '3.12', '3.16', '3.18'], correct: '3.14' },
-            { question: 'Quanto é 125 ÷ 5?', options: ['25', '15', '35', '20'], correct: '25' }
+        const allQuestions = [
+            // Álgebra Básica
+            { question: 'Se 3x + 5 = 17, qual é o valor de x?', options: ['4', '3', '5', '6'], correct: '4', hint: 'Subtraia 5 de ambos os lados e depois divida por 3.', level: 'facil' },
+            { question: 'Resolva a equação: 2(y - 3) = 10', options: ['8', '7', '9', '11'], correct: '8', hint: 'Divida por 2 primeiro, depois adicione 3.', level: 'medio' },
+            { question: 'Qual o valor de 5x - 2y, se x=4 e y=3?', options: ['14', '20', '16', '10'], correct: '14', hint: 'Substitua os valores de x e y na expressão.', level: 'facil' },
+            
+            // Números inteiros, fracionários e equação do 1º grau
+            { question: 'Quanto é 1/2 + 1/3?', options: ['5/6', '2/5', '1/6', '3/5'], correct: '5/6', hint: 'Encontre um denominador comum para as frações.', level: 'facil' },
+            { question: 'Se -8 + x = -3, qual o valor de x?', options: ['5', '-5', '11', '-11'], correct: '5', hint: 'Isole x somando 8 em ambos os lados.', level: 'facil' },
+            { question: 'Qual é o resultado de 0.75 + 1/4?', options: ['1', '0.5', '1.25', '1.5'], correct: '1', hint: 'Converta a fração para decimal ou o decimal para fração e some.', level: 'facil' },
+            { question: 'Resolva a equação: 4x - 7 = 13', options: ['5', '6', '4', '3'], correct: '5', hint: 'Adicione 7 a ambos os lados, depois divida por 4.', level: 'medio' },
+            { question: 'Quanto é 3/4 * 2/3?', options: ['1/2', '5/12', '6/7', '9/8'], correct: '1/2', hint: 'Multiplique os numeradores e os denominadores. Simplifique a fração resultante.', level: 'medio' },
+
+            // Operações com matrizes (adição)
+            { question: 'Dadas A=[1 2; 3 4] e B=[5 6; 7 8], qual é A + B?', options: ['[6 8; 10 12]', '[5 12; 21 32]', '[6 7; 8 9]', '[1 5; 3 7]'], correct: '[6 8; 10 12]', hint: 'Some os elementos correspondentes de cada matriz. A+B = [a11+b11 a12+b12; a21+b21 a22+b22]', level: 'medio' },
+            { question: 'Dadas C=[2 -1; 0 3] e D=[ -2 1; 5 -3], qual é C + D?', options: ['[0 0; 5 0]', '[4 -2; -5 6]', '[0 0; 5 6]', '[0 0; -5 0]'], correct: '[0 0; 5 0]', hint: 'Lembre-se de somar elementos com seus respectivos sinais.', level: 'dificil' },
+            { question: 'Se M1=[1 0; 2 3] e M2=[4 5; 6 7], qual é M1 + M2?', options: ['[5 5; 8 10]', '[4 0; 12 21]', '[5 6; 7 10]', '[1 4; 2 6]'], correct: '[5 5; 8 10]', hint: 'A adição de matrizes é elemento por elemento.', level: 'dificil' },
+
+            // Álgebra (funções lineares)
+            { question: 'Qual é a inclinação (coeficiente angular) da função f(x) = 3x - 7?', options: ['3', '-7', '7', '-3'], correct: '3', hint: 'A forma geral de uma função linear é y = mx + b, onde m é a inclinação.', level: 'medio' },
+            { question: 'Qual é o intercepto y (coeficiente linear) da função f(x) = 2x + 5?', options: ['5', '2', '-5', '-2'], correct: '5', hint: 'O intercepto y é o valor de f(x) quando x é zero.', level: 'medio' },
+            { question: 'Qual a equação de uma reta que passa pelos pontos (1, 2) e (3, 8)?', options: ['y = 3x - 1', 'y = 2x + 1', 'y = 3x + 1', 'y = 2x - 1'], correct: 'y = 3x - 1', hint: 'Calcule a inclinação (m = Δy/Δx) e use a forma ponto-inclinação (y - y1 = m(x - x1)).', level: 'dificil' },
+            { question: 'Dada f(x) = -x + 4, qual é o valor de f(5)?', options: ['-1', '9', '1', '-9'], correct: '-1', hint: 'Substitua x por 5 na função.', level: 'facil' },
+
+            // Derivada de função polinomial
+            { question: 'Qual é a derivada de f(x) = x³ + 2x?', options: ['3x² + 2', '3x² + 2x', 'x² + 2', 'x³ + 2'], correct: '3x² + 2', hint: 'Use a regra da potência: d/dx(x^n) = nx^(n-1). A derivada de uma constante vezes x é a constante.', level: 'dificil' },
+            { question: 'A derivada de g(x) = 4x² - 5x + 1 é:', options: ['8x - 5', '4x - 5', '8x² - 5x', '4x - 5x'], correct: '8x - 5', hint: 'Aplique a regra da potência para cada termo. A derivada de uma constante é zero.', level: 'dificil' },
+            { question: 'Qual é a derivada de h(x) = 7?', options: ['0', '7', '1', '7x'], correct: '0', hint: 'A derivada de uma função constante é sempre zero.', level: 'professor' },
+            { question: 'Derive f(x) = (x^4)/2 - 3x² + 9.', options: ['2x³ - 6x', '4x³ - 6x', '2x³ - 3x', 'x³ - 6x'], correct: '2x³ - 6x', hint: 'Aplique a regra da potência e lembre-se que a derivada de uma constante é zero.', level: 'dificil' },
+
+            // Integral de função polinomial
+            { question: 'Qual é a integral indefinida de f(x) = 3x²?', options: ['x³ + C', '6x + C', 'x² + C', '3x³ + C'], correct: 'x³ + C', hint: 'Use a regra da potência inversa: ∫x^n dx = (x^(n+1))/(n+1) + C. Lembre-se da constante de integração.', level: 'dificil' },
+            { question: 'A integral indefinida de g(x) = 2x + 4 é:', options: ['x² + 4x + C', '2 + C', '2x² + 4x + C', 'x² + 4 + C'], correct: 'x² + 4x + C', hint: 'Integre cada termo separadamente usando a regra da potência e a regra da constante.', level: 'dificil' },
+            { question: 'A integral de ∫(5x⁴ - 2x) dx é:', options: ['x⁵ - x² + C', '20x³ - 2 + C', 'x⁵ - x + C', '5x⁵ - x² + C'], correct: 'x⁵ - x² + C', hint: 'Integre termo a termo. Lembre-se de somar 1 ao expoente e dividir pelo novo expoente.', level: 'dificil' },
+
+            // Relação entre derivada e integral
+            { question: 'Se F(x) é a antiderivada de f(x), então d/dx [F(x)] é igual a:', options: ['f(x)', 'F(x)', '0', 'f\'(x)'], correct: 'f(x)', hint: 'Este é o Teorema Fundamental do Cálculo, parte 1.', level: 'professor' },
+            { question: 'A operação inversa da derivação é a:', options: ['Integração', 'Multiplicação', 'Divisão', 'Subtração'], correct: 'Integração', hint: 'Ambas são operações fundamentais no cálculo e são inversas uma da outra.', level: 'professor' },
+            { question: 'Qual a relação entre a derivada e a integral definida de uma função?', options: ['São operações inversas', 'São a mesma operação', 'Não têm relação', 'São operações de soma'], correct: 'São operações inversas', hint: 'O Teorema Fundamental do Cálculo estabelece essa relação.', level: 'professor' },
+
+            // Integrais indefinidas com raízes e frações
+            { question: 'Qual é a integral indefinida de 1/x?', options: ['ln|x| + C', 'x² + C', '-1/x² + C', '1 + C'], correct: 'ln|x| + C', hint: 'A integral de 1/x é uma função logarítmica natural.', level: 'professor' },
+            { question: 'A integral indefinida de √x (ou x^(1/2)) é:', options: ['(2/3)x^(3/2) + C', '(1/2)x^(-1/2) + C', 'x^(3/2) + C', '(3/2)x^(3/2) + C'], correct: '(2/3)x^(3/2) + C', hint: 'Reescreva a raiz como uma potência e aplique a regra da potência inversa.', level: 'professor' },
+            { question: 'Calcule ∫(1/√x) dx', options: ['2√x + C', '√x + C', '-1/(2√x) + C', '1/(2√x) + C'], correct: '2√x + C', hint: 'Reescreva como x^(-1/2) e use a regra da potência.', level: 'professor' },
+
+            // Cálculo de velocidade a partir da função posição
+            { question: 'Se a função posição de um objeto é s(t) = t³ + 2t, qual é a função velocidade v(t)?', options: ['3t² + 2', 't² + 2', '3t + 2', 't³ + 2'], correct: '3t² + 2', hint: 'A velocidade é a derivada da função posição em relação ao tempo.', level: 'professor' },
+            { question: 'A função posição de uma partícula é s(t) = 5t² - 10t. Qual a velocidade da partícula em t = 2 segundos?', options: ['10 m/s', '0 m/s', '20 m/s', '5 m/s'], correct: '10 m/s', hint: 'Derive a função posição para obter a função velocidade e substitua t=2.', level: 'professor' },
+
+            // Reta tangente à hipérbole (ou outras curvas, exemplo mais simples)
+            { question: 'Qual é a inclinação da reta tangente à curva y = x² no ponto (2, 4)?', options: ['4', '2', '8', '6'], correct: '4', hint: 'Derive a função y = x² e substitua o valor de x do ponto.', level: 'professor' },
+            { question: 'Encontre a equação da reta tangente à curva y = x³ no ponto (1, 1).', options: ['y = 3x - 2', 'y = x + 0', 'y = 3x + 2', 'y = 2x - 1'], correct: 'y = 3x - 2', hint: 'Derive a função para encontrar a inclinação, depois use a forma ponto-inclinação da reta.', level: 'professor' },
+
+            // Cálculo de velocidade e aceleração em função do tempo
+            { question: 'Se a velocidade de um carro é v(t) = 4t + 5, qual é a aceleração a(t)?', options: ['4', '5', '4t', '4t + 5'], correct: '4', hint: 'A aceleração é a derivada da função velocidade em relação ao tempo.', level: 'professor' },
+            { question: 'Dada a posição s(t) = t² + 3t, qual a aceleração em t=1?', options: ['2', '5', '1', '4'], correct: '2', hint: 'Derive s(t) para obter v(t), e derive v(t) para obter a(t). A aceleração de uma função quadrática como essa é constante.', level: 'professor' },
+
+            // Taxa de variação da área de um quadrado em crescimento
+            { question: 'Se o lado de um quadrado é L e está aumentando a uma taxa de 2 cm/s, qual a taxa de variação da área (dA/dt) quando L = 5 cm?', options: ['20 cm²/s', '10 cm²/s', '25 cm²/s', '4 cm²/s'], correct: '20 cm²/s', hint: 'A área A = L². Use a regra da cadeia: dA/dt = (dA/dL) * (dL/dt).', level: 'professor' },
+            { question: 'A área de um quadrado é A = L². Se o lado aumenta a uma taxa de 3 cm/s, qual a taxa de variação da área quando o lado é 10 cm?', options: ['60 cm²/s', '30 cm²/s', '100 cm²/s', '6 cm²/s'], correct: '60 cm²/s', hint: 'Derive a área em relação ao tempo usando a regra da cadeia.', level: 'professor' }
         ];
-        const TIME_PER_QUESTION = 10; // Segundos
+
+        // Mapeia a dificuldade à quantidade de questões e ao tempo adicional da dica
+        const DIFFICULTY_SETTINGS = {
+            'facil': { numQuestions: 5, hintTimeBonus: 5, levels: ['facil'] },
+            'medio': { numQuestions: 10, hintTimeBonus: 7, levels: ['facil', 'medio'] }, 
+            'dificil': { numQuestions: 20, hintTimeBonus: 10, levels: ['facil', 'medio', 'dificil'] },
+            'professor': { numQuestions: 5, hintTimeBonus: 15, levels: ['professor'] } 
+        };
+        const BASE_TIME_PER_QUESTION = 10; // Segundos iniciais
         const MAX_RANKING_ENTRIES = 10; // Limite de entradas no ranking
 
         // --- VARIÁVEIS DE ESTADO DO JOGO ---
@@ -227,32 +432,51 @@
         let proceedingToNextQuestion = false; // Flag para controlar a transição
         let playerName = 'Jogador'; // Nome padrão
         let gameStartTime; // Para calcular o tempo total do jogo
+        let currentDifficulty = 'facil'; // Dificuldade atual do jogo
+        let hintUsedForCurrentQuestion = false; // Flag para saber se a dica foi usada na questão atual
+        let timeLeftOnTimer = BASE_TIME_PER_QUESTION; // Variável para controlar o tempo restante do timer
+        let lastPlayerName = ''; // Para armazenar o nome do último jogador
+        let isAdminMode = false; // NOVA VARIÁVEL: Controla o modo admin
+        let adminKeySequence = []; // Para a sequência da senha do admin
 
         // --- ELEMENTOS DO DOM E MODAIS BOOTSTRAP ---
         const startScreen = document.getElementById('startScreen');
         const nameModalEl = document.getElementById('nameModal');
+        const confirmPlayerModalEl = document.getElementById('confirmPlayerModal'); // Novo modal de confirmação
+        const difficultyModalEl = document.getElementById('difficultyModal');
         const questionModalEl = document.getElementById('questionModal');
+        const hintModalEl = document.getElementById('hintModal');
         const resultModalEl = document.getElementById('resultModal');
         const rankingModalEl = document.getElementById('rankingModal');
+        const adminModeAlert = document.getElementById('adminModeAlert'); // Elemento do alerta admin
 
         const nameModal = new bootstrap.Modal(nameModalEl);
+        const confirmPlayerModal = new bootstrap.Modal(confirmPlayerModalEl); // Novo modal de confirmação
+        const difficultyModal = new bootstrap.Modal(difficultyModalEl);
         const questionModal = new bootstrap.Modal(questionModalEl);
+        const hintModal = new bootstrap.Modal(hintModalEl);
         const resultModal = new bootstrap.Modal(resultModalEl);
         const rankingModal = new bootstrap.Modal(rankingModalEl);
 
         const playerNameInput = document.getElementById('playerNameInput');
-        const startGameWithNameBtn = document.getElementById('startGameWithNameBtn');
+        const continueToDifficultyBtn = document.getElementById('continueToDifficultyBtn');
+        const lastPlayerNameText = document.getElementById('lastPlayerNameText'); // Elemento para mostrar o último nome
+        const changePlayerNameBtn = document.getElementById('changePlayerNameBtn'); // Botão para mudar nome
+        const continueWithLastPlayerBtn = document.getElementById('continueWithLastPlayerBtn'); // Botão para continuar com último nome
+        const difficultyButtons = document.querySelectorAll('#difficultyModal .btn-lg'); // Botões de dificuldade
         const questionCountEl = document.getElementById('questionCount');
         const questionTextEl = document.getElementById('questionText');
         const answersContainerEl = document.getElementById('answersContainer');
         const timerBarEl = document.getElementById('timerBar');
+        const hintButton = document.getElementById('hintButton');
+        const hintTextEl = document.getElementById('hintText');
         
         const resultIconEl = document.getElementById('resultIcon');
         const resultTitleEl = document.getElementById('resultTitle');
         const resultMessageEl = document.getElementById('resultMessage');
         const rankingTableBody = document.getElementById('rankingTableBody');
         
-        // --- LÓGICA DO JOGO ---
+        // --- LISTENERS DE EVENTOS ---
 
         // Evento que dispara APÓS o modal da pergunta ser completamente escondido
         questionModalEl.addEventListener('hidden.bs.modal', () => {
@@ -262,40 +486,147 @@
             }
         });
 
-        // Evento para começar o jogo após digitar o nome
-        startGameWithNameBtn.addEventListener('click', () => {
+        // Evento APÓS o modal do ranking ser completamente escondido
+        rankingModalEl.addEventListener('hidden.bs.modal', () => {
+            startScreen.classList.remove('d-none'); // Reexibe a tela inicial
+        });
+
+        // Evento para continuar do modal de nome para o modal de dificuldade
+        continueToDifficultyBtn.addEventListener('click', () => {
             const inputName = playerNameInput.value.trim();
             if (inputName) {
                 playerName = inputName;
+                localStorage.setItem('lastPlayerName', playerName); // Salva o nome como último jogador
                 nameModal.hide();
-                startGame();
+                difficultyModal.show(); // Mostra o modal de dificuldade
             } else {
-                alert('Por favor, digite seu nome para começar!');
+                alert('Por favor, digite seu nome para continuar!');
                 playerNameInput.focus();
             }
         });
 
+        // Eventos para o modal de confirmação do último jogador
+        changePlayerNameBtn.addEventListener('click', () => {
+            confirmPlayerModal.hide();
+            playerNameInput.value = ''; // Limpa o campo para novo nome
+            nameModal.show(); // Volta para o modal de nome para o usuário digitar um novo nome
+            playerNameInput.focus();
+        });
+
+        continueWithLastPlayerBtn.addEventListener('click', () => {
+            playerName = lastPlayerName; // Usa o nome do último jogador
+            confirmPlayerModal.hide();
+            difficultyModal.show(); // Vai direto para o modal de dificuldade
+        });
+
+
+        // Eventos para os botões de dificuldade
+        difficultyButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                currentDifficulty = event.target.dataset.difficulty;
+                difficultyModal.hide();
+                startGame(); // Inicia o jogo após a seleção de dificuldade
+            });
+        });
+
+        // Evento do botão de dica
+        hintButton.addEventListener('click', () => {
+            if (hintUsedForCurrentQuestion) return; // Não permite usar a dica mais de uma vez
+            
+            const currentQuestion = shuffledQuestions[currentQuestionIndex];
+            if (currentQuestion && currentQuestion.hint) {
+                hintTextEl.textContent = currentQuestion.hint;
+                hintModal.show();
+                hintUsedForCurrentQuestion = true; // Marca a dica como usada
+                hintButton.disabled = true; // Desabilita o botão de dica
+
+                // Aumenta o tempo restante da questão
+                clearInterval(timerInterval); // Para o timer atual
+                const timeBonus = DIFFICULTY_SETTINGS[currentDifficulty].hintTimeBonus;
+                timeLeftOnTimer += timeBonus;
+                // Limita o tempo máximo para não se tornar excessivo
+                const maxTime = BASE_TIME_PER_QUESTION + timeBonus;
+                if (timeLeftOnTimer > maxTime) {
+                    timeLeftOnTimer = maxTime;
+                }
+                startTimer(timeLeftOnTimer); // Reinicia o timer com o tempo extra
+            } else {
+                alert('Não há dica disponível para esta questão.');
+            }
+        });
+
+        // LISTENER PARA O MODO ADMIN
+        document.addEventListener('keydown', (event) => {
+            adminKeySequence.push(event.key.toLowerCase());
+            // Mantém a sequência com os últimos 5 caracteres para "admin"
+            if (adminKeySequence.length > 5) {
+                adminKeySequence.shift(); 
+            }
+
+            if (adminKeySequence.join('') === 'admin') {
+                isAdminMode = !isAdminMode; // Alterna o modo admin
+                adminKeySequence = []; // Reseta a sequência
+                
+                adminModeAlert.textContent = isAdminMode ? 'Modo Admin Ativado!' : 'Modo Admin Desativado!';
+                adminModeAlert.classList.add('show');
+                setTimeout(() => {
+                    adminModeAlert.classList.remove('show');
+                }, 2000); // Esconde o alerta após 2 segundos
+            }
+        });
+
+
+        // --- LÓGICA DO JOGO ---
+
         function showNameModal() {
             startScreen.classList.add('d-none');
-            playerNameInput.value = ''; // Limpa o campo do nome
-            nameModal.show();
+            lastPlayerName = localStorage.getItem('lastPlayerName');
+
+            if (lastPlayerName) {
+                lastPlayerNameText.textContent = lastPlayerName;
+                confirmPlayerModal.show(); // Mostra modal de confirmação
+            } else {
+                playerNameInput.value = ''; // Limpa o campo do nome
+                nameModal.show(); // Mostra modal de nome
+                playerNameInput.focus();
+            }
         }
 
         function startGame() {
-            // Embaralha as perguntas para cada novo jogo
-            shuffledQuestions = [...questions].sort(() => Math.random() - 0.5);
+            const numQuestionsForLevel = DIFFICULTY_SETTINGS[currentDifficulty].numQuestions;
+            const allowedLevels = DIFFICULTY_SETTINGS[currentDifficulty].levels;
+            
+            // Filtra as perguntas pelos níveis de dificuldade permitidos
+            let availableQuestions = allQuestions.filter(q => allowedLevels.includes(q.level));
+
+            // Embaralha todas as perguntas disponíveis antes de selecionar
+            availableQuestions.sort(() => Math.random() - 0.5);
+
+            // Seleciona o número exato de questões para a dificuldade
+            shuffledQuestions = availableQuestions.slice(0, numQuestionsForLevel);
+
+            // Garante que haja pelo menos o número de questões esperado
+            if (shuffledQuestions.length < numQuestionsForLevel) {
+                console.warn(`Atenção: Não há questões suficientes para a dificuldade "${currentDifficulty}". Apenas ${shuffledQuestions.length} questões disponíveis.`);
+                // Poderíamos adicionar um fallback aqui, como adicionar mais perguntas de "facil"
+                // ou mostrar uma mensagem ao usuário, mas por agora, apenas um aviso no console.
+            }
+
             currentQuestionIndex = 0;
             score = 0;
             gameStartTime = Date.now(); // Inicia o cronômetro do jogo
+            hintUsedForCurrentQuestion = false; // Reseta para a nova partida
+
             showQuestion();
         }
 
         function showQuestion() {
-            if (currentQuestionIndex >= shuffledQuestions.length) {
+            // Se não houver questões embaralhadas, ou se já passamos por todas
+            if (!shuffledQuestions || currentQuestionIndex >= shuffledQuestions.length) {
                 // Fim do jogo - Vitória
                 const gameEndTime = Date.now();
-                const totalTimeSeconds = ((gameEndTime - gameStartTime) / 1000).toFixed(2); // Tempo em segundos com 2 casas decimais
-                showResult(true, score, totalTimeSeconds);
+                const totalTimeSeconds = ((gameEndTime - gameStartTime) / 1000).toFixed(2);
+                showResult(true, score, shuffledQuestions.length, totalTimeSeconds); 
                 return;
             }
 
@@ -303,6 +634,8 @@
             questionCountEl.textContent = `${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
             questionTextEl.textContent = q.question;
             answersContainerEl.innerHTML = '';
+            hintButton.disabled = false; // Habilita o botão de dica para a nova questão
+            hintUsedForCurrentQuestion = false; // Reseta a flag da dica para a nova questão
 
             // Embaralha as opções de resposta
             const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
@@ -312,10 +645,16 @@
                 button.classList.add('btn', 'btn-outline-light', 'answer-btn');
                 button.onclick = () => checkAnswer(option, q.correct, button);
                 answersContainerEl.appendChild(button);
+
+                // NOVO: Destaca a resposta correta em modo admin
+                if (isAdminMode && option === q.correct) {
+                    button.classList.add('btn-success'); // Marca o botão correto em verde
+                    button.classList.remove('btn-outline-light'); // Remove o estilo de outline
+                }
             });
             
             questionModal.show();
-            startTimer();
+            startTimer(BASE_TIME_PER_QUESTION); // Inicia o timer com o tempo base
         }
 
         function checkAnswer(selectedAnswer, correctAnswer, button) {
@@ -324,45 +663,54 @@
             // Desabilita todos os botões para evitar cliques múltiplos
             const answerButtons = answersContainerEl.querySelectorAll('.btn');
             answerButtons.forEach(btn => btn.disabled = true);
+            hintButton.disabled = true; // Desabilita a dica ao responder
 
             if (selectedAnswer === correctAnswer) {
-                button.classList.remove('btn-outline-light');
-                button.classList.add('btn-success');
+                // Se não estiver em modo admin, aplica as classes de sucesso normalmente
+                if (!isAdminMode) {
+                    button.classList.remove('btn-outline-light');
+                    button.classList.add('btn-success');
+                }
                 score++;
                 currentQuestionIndex++;
-                proceedingToNextQuestion = true; // Ativa a flag para o listener do 'hidden.bs.modal'
+                proceedingToNextQuestion = true; 
                 
                 setTimeout(() => {
-                    questionModal.hide(); // Apenas esconde o modal. O listener fará o resto.
+                    questionModal.hide(); 
                 }, 1000);
 
             } else {
-                button.classList.remove('btn-outline-light');
-                button.classList.add('btn-danger');
-                
-                // Mostra qual era a resposta correta
-                answerButtons.forEach(btn => {
-                    if (btn.textContent === correctAnswer) {
-                        btn.classList.remove('btn-outline-light');
-                        btn.classList.add('btn-success');
-                    }
-                });
+                // Se não estiver em modo admin, aplica as classes de erro e mostra a correta
+                if (!isAdminMode) {
+                    button.classList.remove('btn-outline-light');
+                    button.classList.add('btn-danger');
+                    
+                    answerButtons.forEach(btn => {
+                        if (btn.textContent === correctAnswer) {
+                            btn.classList.remove('btn-outline-light');
+                            btn.classList.add('btn-success');
+                        }
+                    });
+                }
 
+                // Finaliza o jogo em caso de erro
                 setTimeout(() => {
                     questionModal.hide();
-                    showResult(false, score, 0, 'Resposta errada!'); // Tempo 0 pois não terminou com sucesso
+                    const gameEndTime = Date.now();
+                    const totalTimeSeconds = ((gameEndTime - gameStartTime) / 1000).toFixed(2);
+                    showResult(false, score, shuffledQuestions.length, totalTimeSeconds, 'Resposta errada!'); 
                 }, 1500);
             }
         }
 
-        function startTimer() {
-            let timeLeft = TIME_PER_QUESTION;
+        function startTimer(duration) {
+            timeLeftOnTimer = duration; // Define o tempo inicial do timer
             timerBarEl.style.width = '100%';
             timerBarEl.className = 'progress-bar bg-primary'; // Reseta as cores
             
             timerInterval = setInterval(() => {
-                timeLeft--;
-                const percentage = (timeLeft / TIME_PER_QUESTION) * 100;
+                timeLeftOnTimer--;
+                const percentage = (timeLeftOnTimer / duration) * 100;
                 timerBarEl.style.width = `${percentage}%`;
 
                 if (percentage < 50 && percentage > 20) {
@@ -373,113 +721,185 @@
                     timerBarEl.classList.add('bg-danger');
                 }
 
-                if (timeLeft <= 0) {
+                if (timeLeftOnTimer <= 0) {
                     clearInterval(timerInterval);
                     questionModal.hide();
-                    showResult(false, score, 0, 'O tempo acabou!'); // Tempo 0 pois não terminou com sucesso
+                    const gameEndTime = Date.now();
+                    const totalTimeSeconds = ((gameEndTime - gameStartTime) / 1000).toFixed(2);
+                    showResult(false, score, shuffledQuestions.length, totalTimeSeconds, 'O tempo acabou!'); 
                 }
             }, 1000);
         }
         
-        function showResult(isSuccess, finalScore, totalTime, message = '') {
+        function showResult(isSuccess, finalScore, totalQuestionsAttempted, totalTime, message = '') {
+            clearInterval(timerInterval); // Garante que o timer seja parado
+            
             if (isSuccess) {
                 resultIconEl.textContent = '🎉';
                 resultTitleEl.textContent = 'Bomba Desarmada!';
-                resultMessageEl.textContent = `Parabéns, ${playerName}! Você acertou ${finalScore} de ${shuffledQuestions.length} questões em ${totalTime} segundos.`;
+                resultMessageEl.textContent = `Parabéns, ${playerName}! Você acertou ${finalScore} de ${totalQuestionsAttempted} questões em ${totalTime} segundos no nível ${currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1)}!`;
                 resultTitleEl.classList.remove('text-danger');
                 resultTitleEl.classList.add('text-success');
                 launchConfetti();
-                saveRanking(playerName, finalScore, totalTime); // Salva o resultado no ranking
             } else {
                 document.body.classList.add('explode-animation');
                 resultIconEl.textContent = '💥';
                 resultTitleEl.textContent = 'BOOM!';
-                resultMessageEl.textContent = `${message} Você acertou ${finalScore} de ${shuffledQuestions.length} questões.`;
+                resultMessageEl.textContent = `${message} Você acertou ${finalScore} de ${totalQuestionsAttempted} questões no nível ${currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1)}.`;
                 resultTitleEl.classList.remove('text-success');
                 resultTitleEl.classList.add('text-danger');
             }
+
+            // Salva no ranking independentemente do sucesso
+            if (gameStartTime) { 
+                saveRankingEntry(playerName, finalScore, totalQuestionsAttempted, totalTime, currentDifficulty);
+            }
+
             resultModal.show();
         }
         
         function restartGame() {
             resultModal.hide();
-            // Ao invés de mostrar o startScreen, volta para o modal de nome
-            showNameModal(); 
             document.body.classList.remove('explode-animation');
+            showNameModal(); // Volta para o fluxo de verificação do último jogador/nome
         }
 
         // --- FUNÇÕES DE RANKING ---
+
+        // Função para obter o ranking do localStorage
         function getRanking() {
             const ranking = localStorage.getItem('bombRanking');
             return ranking ? JSON.parse(ranking) : [];
         }
 
-        function saveRanking(name, score, time) {
+        // Função para salvar uma entrada no ranking (agora para todos os jogos)
+        function saveRankingEntry(name, score, totalQuestions, time, difficulty) {
             let ranking = getRanking();
             const newEntry = {
                 name: name,
                 score: score,
-                time: parseFloat(time), // Garante que o tempo seja um número
+                totalQuestions: totalQuestions,
+                time: parseFloat(time), 
+                difficulty: difficulty,
                 date: new Date().toISOString()
             };
 
-            // Se o jogo não foi um sucesso (bomba explodiu), não adiciona ao ranking principal.
-            // Apenas adicionamos se o jogador desarmou a bomba (isSuccess = true)
-            // No entanto, se o objetivo é "velocidade de acerto e quantidade",
-            // mesmo errando, o acerto é contado. Vamos manter como estava antes,
-            // registrando apenas se o jogo foi concluído com sucesso (todas as questões desarmadas).
-            // Se você quiser rankear quem fez mais acertos mesmo se a bomba explodir, me avise.
-            if (score === questions.length) { // Apenas salva se acertou todas as questões
-                 ranking.push(newEntry);
-            }
-           
-            // Ordena o ranking:
-            // 1. Por pontuação (acertos) em ordem decrescente
-            // 2. Por tempo em ordem crescente (para desempate de pontuação)
-            ranking.sort((a, b) => {
-                if (b.score !== a.score) {
-                    return b.score - a.score; // Mais acertos primeiro
-                }
-                return a.time - b.time; // Menor tempo primeiro
-            });
+            // Tenta encontrar uma entrada existente para o mesmo jogador e dificuldade
+            const existingEntryIndex = ranking.findIndex(
+                entry => entry.name === name && entry.difficulty === difficulty
+            );
 
-            // Limita o número de entradas no ranking
+            if (existingEntryIndex > -1) {
+                // Se o novo resultado é melhor, atualiza a entrada existente
+                const existingEntry = ranking[existingEntryIndex];
+                // Critério de "melhor": maior score OU (mesmo score E menor tempo)
+                if (newEntry.score > existingEntry.score || 
+                    (newEntry.score === existingEntry.score && newEntry.time < existingEntry.time)) {
+                    ranking[existingEntryIndex] = newEntry; // Substitui pela nova entrada
+                    console.log(`Ranking atualizado para ${name} no nível ${difficulty}: Melhor tempo/score!`);
+                } else {
+                    console.log(`Resultado de ${name} no nível ${difficulty} não é melhor que o existente. Não atualizado.`);
+                }
+            } else {
+                // Se não existe, adiciona a nova entrada
+                ranking.push(newEntry);
+                console.log(`Nova entrada no ranking para ${name} no nível ${difficulty}.`);
+            }
+
+            // Ordena o ranking global pelo critério principal
+            sortRanking(ranking);
+
+            // Limita o número de entradas globais no ranking (top X)
+            // Certifica-se de que o ranking sempre tenha no máximo MAX_RANKING_ENTRIES
+            // Mantenha esta linha para limitar o tamanho do ranking geral se desejar um "top 10" global.
+            // Se você quiser manter todos os resultados, remova ou comente esta linha.
             if (ranking.length > MAX_RANKING_ENTRIES) {
                 ranking = ranking.slice(0, MAX_RANKING_ENTRIES);
             }
 
             localStorage.setItem('bombRanking', JSON.stringify(ranking));
-            console.log('Ranking atualizado:', ranking); // Para depuração
         }
 
+        // Função auxiliar para ordenar o ranking
+        function sortRanking(rankingArray) {
+            // A ordem de prioridade das dificuldades para ordenação do ranking
+            const difficultyOrder = ['professor', 'dificil', 'medio', 'facil'];
+
+            rankingArray.sort((a, b) => {
+                // 1. Por Dificuldade (professor > dificil > medio > facil)
+                const diffA = difficultyOrder.indexOf(a.difficulty);
+                const diffB = difficultyOrder.indexOf(b.difficulty);
+                if (diffA !== diffB) {
+                    return diffA - diffB;
+                }
+
+                // 2. Por Score (maior primeiro)
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+
+                // 3. Por Tempo (menor primeiro)
+                return a.time - b.time;
+            });
+        }
+
+
+        // Função para exibir o modal do ranking
         function showRanking() {
-            // Esta função é chamada do startScreen
-            const ranking = getRanking();
+            let ranking = getRanking();
             rankingTableBody.innerHTML = ''; // Limpa a tabela
 
             if (ranking.length === 0) {
-                rankingTableBody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhum recorde ainda. Seja o primeiro!</td></tr>';
+                rankingTableBody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum recorde ainda. Seja o primeiro a desarmar uma bomba!</td></tr>';
             } else {
-                ranking.forEach((entry, index) => {
+                // Garante que o ranking está ordenado antes de exibir
+                sortRanking(ranking); 
+                
+                // Exibe as entradas até o limite definido em MAX_RANKING_ENTRIES
+                const entriesToDisplay = ranking.slice(0, MAX_RANKING_ENTRIES);
+                entriesToDisplay.forEach((entry, index) => {
                     const row = rankingTableBody.insertRow();
+                    // A classe 'completed-game' aqui é apenas visual, para destacar
+                    // Se você quiser diferenciar jogos ganhos de perdidos no ranking,
+                    // você precisaria salvar um status de 'isSuccess' na entrada do ranking.
+                    row.classList.add('completed-game'); 
                     row.innerHTML = `
                         <th scope="row">${index + 1}</th>
                         <td>${entry.name}</td>
                         <td>${entry.score}</td>
+                        <td>${entry.totalQuestions}</td>
                         <td>${entry.time.toFixed(2)}s</td>
+                        <td>${entry.difficulty.charAt(0).toUpperCase() + entry.difficulty.slice(1)}</td>
                     `;
                 });
             }
-            // Não esconde resultModal aqui, pois pode não estar visível
+            // Garante que a tela inicial esteja escondida e mostra o modal do ranking
+            startScreen.classList.add('d-none'); // Esconde a tela inicial
+            nameModal.hide();
+            confirmPlayerModal.hide();
+            difficultyModal.hide();
+            questionModal.hide();
+            hintModal.hide();
+            resultModal.hide();
+            
             rankingModal.show();
         }
 
         function showRankingFromResults() {
-            // Nova função para ser chamada do resultModal
             resultModal.hide(); // Esconde o modal de resultados
             showRanking(); // Chama a função que popula e mostra o ranking
         }
 
+        // Função para apagar todos os dados do localStorage
+        function clearAllData() {
+            if (confirm('Tem certeza que deseja apagar todos os dados do ranking e o último nome salvo? Esta ação é irreversível.')) {
+                localStorage.removeItem('bombRanking');
+                localStorage.removeItem('lastPlayerName');
+                alert('Todos os dados foram apagados com sucesso!');
+                // Opcional: recarregar a página para garantir que tudo esteja limpo
+                location.reload(); 
+            }
+        }
 
         // --- EFEITOS VISUAIS ---
         function launchConfetti() {
