@@ -353,66 +353,41 @@
     <script>
         // --- CONFIGURAÇÕES DO JOGO ---
         const allQuestions = [
-            // Álgebra Básica
-            { question: 'Se 3x + 5 = 17, qual é o valor de x?', options: ['4', '3', '5', '6'], correct: '4', hint: 'Subtraia 5 de ambos os lados e depois divida por 3.', level: 'facil' },
-            { question: 'Resolva a equação: 2(y - 3) = 10', options: ['8', '7', '9', '11'], correct: '8', hint: 'Divida por 2 primeiro, depois adicione 3.', level: 'medio' },
-            { question: 'Qual o valor de 5x - 2y, se x=4 e y=3?', options: ['14', '20', '16', '10'], correct: '14', hint: 'Substitua os valores de x e y na expressão.', level: 'facil' },
-            
-            // Números inteiros, fracionários e equação do 1º grau
-            { question: 'Quanto é 1/2 + 1/3?', options: ['5/6', '2/5', '1/6', '3/5'], correct: '5/6', hint: 'Encontre um denominador comum para as frações.', level: 'facil' },
-            { question: 'Se -8 + x = -3, qual o valor de x?', options: ['5', '-5', '11', '-11'], correct: '5', hint: 'Isole x somando 8 em ambos os lados.', level: 'facil' },
-            { question: 'Qual é o resultado de 0.75 + 1/4?', options: ['1', '0.5', '1.25', '1.5'], correct: '1', hint: 'Converta a fração para decimal ou o decimal para fração e some.', level: 'facil' },
-            { question: 'Resolva a equação: 4x - 7 = 13', options: ['5', '6', '4', '3'], correct: '5', hint: 'Adicione 7 a ambos os lados, depois divida por 4.', level: 'medio' },
-            { question: 'Quanto é 3/4 * 2/3?', options: ['1/2', '5/12', '6/7', '9/8'], correct: '1/2', hint: 'Multiplique os numeradores e os denominadores. Simplifique a fração resultante.', level: 'medio' },
-
-            // Operações com matrizes (adição)
-            { question: 'Dadas A=[1 2; 3 4] e B=[5 6; 7 8], qual é A + B?', options: ['[6 8; 10 12]', '[5 12; 21 32]', '[6 7; 8 9]', '[1 5; 3 7]'], correct: '[6 8; 10 12]', hint: 'Some os elementos correspondentes de cada matriz. A+B = [a11+b11 a12+b12; a21+b21 a22+b22]', level: 'medio' },
-            { question: 'Dadas C=[2 -1; 0 3] e D=[ -2 1; 5 -3], qual é C + D?', options: ['[0 0; 5 0]', '[4 -2; -5 6]', '[0 0; 5 6]', '[0 0; -5 0]'], correct: '[0 0; 5 0]', hint: 'Lembre-se de somar elementos com seus respectivos sinais.', level: 'dificil' },
-            { question: 'Se M1=[1 0; 2 3] e M2=[4 5; 6 7], qual é M1 + M2?', options: ['[5 5; 8 10]', '[4 0; 12 21]', '[5 6; 7 10]', '[1 4; 2 6]'], correct: '[5 5; 8 10]', hint: 'A adição de matrizes é elemento por elemento.', level: 'dificil' },
-
-            // Álgebra (funções lineares)
-            { question: 'Qual é a inclinação (coeficiente angular) da função f(x) = 3x - 7?', options: ['3', '-7', '7', '-3'], correct: '3', hint: 'A forma geral de uma função linear é y = mx + b, onde m é a inclinação.', level: 'medio' },
-            { question: 'Qual é o intercepto y (coeficiente linear) da função f(x) = 2x + 5?', options: ['5', '2', '-5', '-2'], correct: '5', hint: 'O intercepto y é o valor de f(x) quando x é zero.', level: 'medio' },
-            { question: 'Qual a equação de uma reta que passa pelos pontos (1, 2) e (3, 8)?', options: ['y = 3x - 1', 'y = 2x + 1', 'y = 3x + 1', 'y = 2x - 1'], correct: 'y = 3x - 1', hint: 'Calcule a inclinação (m = Δy/Δx) e use a forma ponto-inclinação (y - y1 = m(x - x1)).', level: 'dificil' },
-            { question: 'Dada f(x) = -x + 4, qual é o valor de f(5)?', options: ['-1', '9', '1', '-9'], correct: '-1', hint: 'Substitua x por 5 na função.', level: 'facil' },
-
-            // Derivada de função polinomial
-            { question: 'Qual é a derivada de f(x) = x³ + 2x?', options: ['3x² + 2', '3x² + 2x', 'x² + 2', 'x³ + 2'], correct: '3x² + 2', hint: 'Use a regra da potência: d/dx(x^n) = nx^(n-1). A derivada de uma constante vezes x é a constante.', level: 'dificil' },
-            { question: 'A derivada de g(x) = 4x² - 5x + 1 é:', options: ['8x - 5', '4x - 5', '8x² - 5x', '4x - 5x'], correct: '8x - 5', hint: 'Aplique a regra da potência para cada termo. A derivada de uma constante é zero.', level: 'dificil' },
-            { question: 'Qual é a derivada de h(x) = 7?', options: ['0', '7', '1', '7x'], correct: '0', hint: 'A derivada de uma função constante é sempre zero.', level: 'professor' },
-            { question: 'Derive f(x) = (x^4)/2 - 3x² + 9.', options: ['2x³ - 6x', '4x³ - 6x', '2x³ - 3x', 'x³ - 6x'], correct: '2x³ - 6x', hint: 'Aplique a regra da potência e lembre-se que a derivada de uma constante é zero.', level: 'dificil' },
-
-            // Integral de função polinomial
-            { question: 'Qual é a integral indefinida de f(x) = 3x²?', options: ['x³ + C', '6x + C', 'x² + C', '3x³ + C'], correct: 'x³ + C', hint: 'Use a regra da potência inversa: ∫x^n dx = (x^(n+1))/(n+1) + C. Lembre-se da constante de integração.', level: 'dificil' },
-            { question: 'A integral indefinida de g(x) = 2x + 4 é:', options: ['x² + 4x + C', '2 + C', '2x² + 4x + C', 'x² + 4 + C'], correct: 'x² + 4x + C', hint: 'Integre cada termo separadamente usando a regra da potência e a regra da constante.', level: 'dificil' },
-            { question: 'A integral de ∫(5x⁴ - 2x) dx é:', options: ['x⁵ - x² + C', '20x³ - 2 + C', 'x⁵ - x + C', '5x⁵ - x² + C'], correct: 'x⁵ - x² + C', hint: 'Integre termo a termo. Lembre-se de somar 1 ao expoente e dividir pelo novo expoente.', level: 'dificil' },
-
-            // Relação entre derivada e integral
-            { question: 'Se F(x) é a antiderivada de f(x), então d/dx [F(x)] é igual a:', options: ['f(x)', 'F(x)', '0', 'f\'(x)'], correct: 'f(x)', hint: 'Este é o Teorema Fundamental do Cálculo, parte 1.', level: 'professor' },
-            { question: 'A operação inversa da derivação é a:', options: ['Integração', 'Multiplicação', 'Divisão', 'Subtração'], correct: 'Integração', hint: 'Ambas são operações fundamentais no cálculo e são inversas uma da outra.', level: 'professor' },
-            { question: 'Qual a relação entre a derivada e a integral definida de uma função?', options: ['São operações inversas', 'São a mesma operação', 'Não têm relação', 'São operações de soma'], correct: 'São operações inversas', hint: 'O Teorema Fundamental do Cálculo estabelece essa relação.', level: 'professor' },
-
-            // Integrais indefinidas com raízes e frações
-            { question: 'Qual é a integral indefinida de 1/x?', options: ['ln|x| + C', 'x² + C', '-1/x² + C', '1 + C'], correct: 'ln|x| + C', hint: 'A integral de 1/x é uma função logarítmica natural.', level: 'professor' },
-            { question: 'A integral indefinida de √x (ou x^(1/2)) é:', options: ['(2/3)x^(3/2) + C', '(1/2)x^(-1/2) + C', 'x^(3/2) + C', '(3/2)x^(3/2) + C'], correct: '(2/3)x^(3/2) + C', hint: 'Reescreva a raiz como uma potência e aplique a regra da potência inversa.', level: 'professor' },
-            { question: 'Calcule ∫(1/√x) dx', options: ['2√x + C', '√x + C', '-1/(2√x) + C', '1/(2√x) + C'], correct: '2√x + C', hint: 'Reescreva como x^(-1/2) e use a regra da potência.', level: 'professor' },
-
-            // Cálculo de velocidade a partir da função posição
-            { question: 'Se a função posição de um objeto é s(t) = t³ + 2t, qual é a função velocidade v(t)?', options: ['3t² + 2', 't² + 2', '3t + 2', 't³ + 2'], correct: '3t² + 2', hint: 'A velocidade é a derivada da função posição em relação ao tempo.', level: 'professor' },
-            { question: 'A função posição de uma partícula é s(t) = 5t² - 10t. Qual a velocidade da partícula em t = 2 segundos?', options: ['10 m/s', '0 m/s', '20 m/s', '5 m/s'], correct: '10 m/s', hint: 'Derive a função posição para obter a função velocidade e substitua t=2.', level: 'professor' },
-
-            // Reta tangente à hipérbole (ou outras curvas, exemplo mais simples)
-            { question: 'Qual é a inclinação da reta tangente à curva y = x² no ponto (2, 4)?', options: ['4', '2', '8', '6'], correct: '4', hint: 'Derive a função y = x² e substitua o valor de x do ponto.', level: 'professor' },
-            { question: 'Encontre a equação da reta tangente à curva y = x³ no ponto (1, 1).', options: ['y = 3x - 2', 'y = x + 0', 'y = 3x + 2', 'y = 2x - 1'], correct: 'y = 3x - 2', hint: 'Derive a função para encontrar a inclinação, depois use a forma ponto-inclinação da reta.', level: 'professor' },
-
-            // Cálculo de velocidade e aceleração em função do tempo
-            { question: 'Se a velocidade de um carro é v(t) = 4t + 5, qual é a aceleração a(t)?', options: ['4', '5', '4t', '4t + 5'], correct: '4', hint: 'A aceleração é a derivada da função velocidade em relação ao tempo.', level: 'professor' },
-            { question: 'Dada a posição s(t) = t² + 3t, qual a aceleração em t=1?', options: ['2', '5', '1', '4'], correct: '2', hint: 'Derive s(t) para obter v(t), e derive v(t) para obter a(t). A aceleração de uma função quadrática como essa é constante.', level: 'professor' },
-
-            // Taxa de variação da área de um quadrado em crescimento
-            { question: 'Se o lado de um quadrado é L e está aumentando a uma taxa de 2 cm/s, qual a taxa de variação da área (dA/dt) quando L = 5 cm?', options: ['20 cm²/s', '10 cm²/s', '25 cm²/s', '4 cm²/s'], correct: '20 cm²/s', hint: 'A área A = L². Use a regra da cadeia: dA/dt = (dA/dL) * (dL/dt).', level: 'professor' },
-            { question: 'A área de um quadrado é A = L². Se o lado aumenta a uma taxa de 3 cm/s, qual a taxa de variação da área quando o lado é 10 cm?', options: ['60 cm²/s', '30 cm²/s', '100 cm²/s', '6 cm²/s'], correct: '60 cm²/s', hint: 'Derive a área em relação ao tempo usando a regra da cadeia.', level: 'professor' }
-        ];
+    // ========== ÁLGEBRA BÁSICA ==========
+    { question: 'Se 3x + 5 = 17, qual é o valor de x?', options: ['4', '3', '5', '6'], correct: '4', hint: 'Subtraia 5 de ambos os lados e depois divida por 3.', level: 'facil' },
+    { question: 'Resolva a equação: 2(y - 3) = 10', options: ['8', '7', '9', '11'], correct: '8', hint: 'Divida por 2 primeiro, depois adicione 3.', level: 'medio' },
+    { question: 'Quanto é 1/2 + 1/3?', options: ['5/6', '2/5', '1/6', '3/5'], correct: '5/6', hint: 'MMC de 2 e 3 é 6. (3/6 + 2/6 = 5/6)', level: 'facil' },
+    
+    // ========== MATRIZES & OPERAÇÕES ==========
+    { question: 'Dadas A = [[1,2],[3,4]] e B = [[5,6],[7,8]], qual é A + B?', options: ['[[6,8],[10,12]]', '[[5,12],[21,32]]', '[[6,7],[8,9]]', '[[1,5],[3,7]]'], correct: '[[6,8],[10,12]]', hint: 'Some elementos correspondentes: a₁₁+b₁₁, a₁₂+b₁₂, etc.', level: 'facil' },
+    { question: 'Qual o resultado de [[2,-1],[0,3]] × [[1],[4]]?', options: ['[[-2],[12]]', '[[2],[-4]]', '[[6],[12]]', '[[1],[7]]'], correct: '[[-2],[12]]', hint: 'Multiplicação linha por coluna: (2*1 + (-1)*4) e (0*1 + 3*4)', level: 'medio' },
+    { question: 'Qual o determinante de [[3,1],[2,4]]?', options: ['10', '14', '5', '12'], correct: '10', hint: 'det = (a*d) - (b*c) = (3*4) - (1*2)', level: 'medio' },
+    { question: 'Calcule o determinante de [[1,2,3],[0,4,5],[1,0,6]]', options: ['22', '10', '-14', '18'], correct: '22', hint: 'Regra de Sarrus: (1*4*6 + 2*5*1 + 3*0*0) - (3*4*1 + 1*5*0 + 2*0*6)', level: 'dificil' },
+    
+    // ========== SISTEMAS LINEARES & CRAMER ==========
+    { question: 'Resolva o sistema: {2x + y = 5; x - y = 1}', options: ['(2,1)', '(3,1)', '(1,3)', '(2,3)'], correct: '(2,1)', hint: 'Some as equações para eliminar y: 3x = 6', level: 'medio' },
+    { question: 'Para o sistema {3x+2y=8; x-4y=-6}, qual é D_y no método de Cramer?', options: ['30', '14', '-18', '22'], correct: '30', hint: 'D_y = det([[3,8],[1,-6]]) = (3*-6) - (8*1)', level: 'dificil' },
+    { question: 'Resolva por Cramer: {x+y+z=6; 2y+5z=-4; 2x+5y-z=27}', options: ['(5,3,-2)', '(4,2,-1)', '(6,0,-2)', '(3,5,-2)'], correct: '(5,3,-2)', hint: 'Calcule D, D_x, D_y, D_z usando determinantes', level: 'professor' },
+    { question: 'Uma loja vende A (R$15) e B (R$25). Foram vendidas 40 unidades com total R$800. Quantas de A?', options: ['20', '25', '30', '15'], correct: '20', hint: 'Sistema: {A + B = 40; 15A + 25B = 800}', level: 'dificil' },
+    
+    // ========== DERIVADAS ==========
+    { question: 'Qual a derivada de f(x) = x³ + 2x?', options: ['3x² + 2', '3x² + 2x', 'x² + 2', 'x³ + 2'], correct: '3x² + 2', hint: 'Regra da potência: d/dx(x^n) = nx^{n-1}', level: 'medio' },
+    { question: 'Derive f(x) = (x² + 1)(3x - 2)', options: ['9x² - 4x + 3', '6x² - 2x + 3', '3x³ - 2x + 3', '9x² + 4x - 3'], correct: '9x² - 4x + 3', hint: 'Regra do produto: (uv)\' = u\'v + uv\'', level: 'dificil' },
+    { question: 'Derive f(x) = √(3x² + 1)', options: ['3x/√(3x²+1)', '6x/√(3x²+1)', '3/√(3x²+1)', 'x/√(3x²+1)'], correct: '3x/√(3x²+1)', hint: 'Regra da cadeia: d/dx[g(h(x))] = g\'(h(x))·h\'(x)', level: 'professor' },
+    { question: 'Qual a inclinação da tangente a y = x² no ponto (2,4)?', options: ['4', '2', '1', '0'], correct: '4', hint: 'Derivada dy/dx = 2x. Avalie em x=2', level: 'dificil' },
+    { question: 'Se V(t) = t³ - 4t (m/s) é a velocidade, qual a aceleração em t=2s?', options: ['8 m/s²', '4 m/s²', '12 m/s²', '6 m/s²'], correct: '8 m/s²', hint: 'Aceleração = dV/dt. Derive e substitua t=2', level: 'professor' },
+    
+    // ========== INTEGRAIS ==========
+    { question: '∫(3x² - 2x + 1) dx = ?', options: ['x³ - x² + x + C', 'x³ + x² + x + C', '6x - 2 + C', 'x³ - x² + C'], correct: 'x³ - x² + x + C', hint: 'Integre termo a termo: ∫x^n dx = x^{n+1}/(n+1)', level: 'dificil' },
+    { question: '∫₀² (2x + 1) dx = ?', options: ['6', '4', '5', '3'], correct: '6', hint: 'Primitiva: x² + x. Calcule F(2) - F(0)', level: 'dificil' },
+    { question: 'Se f\'(x) = 4x³, qual é f(x)?', options: ['x⁴ + C', '12x² + C', 'x⁴', '4x⁴ + C'], correct: 'x⁴ + C', hint: 'Integre a derivada para obter a função original', level: 'medio' },
+    { question: 'Qual a área sob y = 2x de x=1 a x=3?', options: ['8', '6', '4', '10'], correct: '8', hint: 'Calcule ∫₁³ 2x dx = [x²]₁³ = 9 - 1', level: 'dificil' },
+    
+    // ========== APLICAÇÕES ==========
+    { question: 'Um cubo expande com aresta a = 2t cm. Qual dV/dt quando t=1s?', options: ['24 cm³/s', '12 cm³/s', '8 cm³/s', '6 cm³/s'], correct: '24 cm³/s', hint: 'V = a³ = 8t³. dV/dt = 24t². Substitua t=1', level: 'professor' },
+    { question: 'Se a posição s(t) = 2t³ - 3t (m), qual a velocidade em t=1s?', options: ['3 m/s', '1 m/s', '0 m/s', '6 m/s'], correct: '3 m/s', hint: 'v(t) = ds/dt = 6t² - 3. Avalie em t=1', level: 'dificil' },
+    { question: 'Um balão esférico infla a dV/dt = 10π cm³/s. Qual dr/dt quando r=5 cm?', options: ['0.1 cm/s', '0.2 cm/s', '0.4 cm/s', '0.5 cm/s'], correct: '0.1 cm/s', hint: 'V = 4/3πr³ → dV/dr = 4πr². Use dr/dt = (dV/dt)/(dV/dr)', level: 'professor' }
+];
 
         // Mapeia a dificuldade à quantidade de questões e ao tempo adicional da dica
         const DIFFICULTY_SETTINGS = {
@@ -421,7 +396,7 @@
             'dificil': { numQuestions: 20, hintTimeBonus: 10, levels: ['facil', 'medio', 'dificil'] },
             'professor': { numQuestions: 5, hintTimeBonus: 15, levels: ['professor'] } 
         };
-        const BASE_TIME_PER_QUESTION = 10; // Segundos iniciais
+        const BASE_TIME_PER_QUESTION = 30; // Segundos iniciais
         const MAX_RANKING_ENTRIES = 10; // Limite de entradas no ranking
 
         // --- VARIÁVEIS DE ESTADO DO JOGO ---
