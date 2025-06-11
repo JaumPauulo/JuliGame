@@ -571,7 +571,7 @@
                 adminModeAlert.classList.add('show');
                 setTimeout(() => {
                     adminModeAlert.classList.remove('show');
-                }, 2000); // Esconde o alerta após 2 segundos
+                }, 2000); 
             }
         });
 
@@ -596,20 +596,14 @@
             const numQuestionsForLevel = DIFFICULTY_SETTINGS[currentDifficulty].numQuestions;
             const allowedLevels = DIFFICULTY_SETTINGS[currentDifficulty].levels;
             
-            // Filtra as perguntas pelos níveis de dificuldade permitidos
             let availableQuestions = allQuestions.filter(q => allowedLevels.includes(q.level));
 
-            // Embaralha todas as perguntas disponíveis antes de selecionar
             availableQuestions.sort(() => Math.random() - 0.5);
 
-            // Seleciona o número exato de questões para a dificuldade
             shuffledQuestions = availableQuestions.slice(0, numQuestionsForLevel);
 
-            // Garante que haja pelo menos o número de questões esperado
             if (shuffledQuestions.length < numQuestionsForLevel) {
                 console.warn(`Atenção: Não há questões suficientes para a dificuldade "${currentDifficulty}". Apenas ${shuffledQuestions.length} questões disponíveis.`);
-                // Poderíamos adicionar um fallback aqui, como adicionar mais perguntas de "facil"
-                // ou mostrar uma mensagem ao usuário, mas por agora, apenas um aviso no console.
             }
 
             currentQuestionIndex = 0;
@@ -666,7 +660,6 @@
             hintButton.disabled = true; // Desabilita a dica ao responder
 
             if (selectedAnswer === correctAnswer) {
-                // Se não estiver em modo admin, aplica as classes de sucesso normalmente
                 if (!isAdminMode) {
                     button.classList.remove('btn-outline-light');
                     button.classList.add('btn-success');
@@ -680,7 +673,6 @@
                 }, 1000);
 
             } else {
-                // Se não estiver em modo admin, aplica as classes de erro e mostra a correta
                 if (!isAdminMode) {
                     button.classList.remove('btn-outline-light');
                     button.classList.add('btn-danger');
@@ -693,7 +685,6 @@
                     });
                 }
 
-                // Finaliza o jogo em caso de erro
                 setTimeout(() => {
                     questionModal.hide();
                     const gameEndTime = Date.now();
@@ -750,7 +741,6 @@
                 resultTitleEl.classList.add('text-danger');
             }
 
-            // Salva no ranking independentemente do sucesso
             if (gameStartTime) { 
                 saveRankingEntry(playerName, finalScore, totalQuestionsAttempted, totalTime, currentDifficulty);
             }
@@ -761,18 +751,14 @@
         function restartGame() {
             resultModal.hide();
             document.body.classList.remove('explode-animation');
-            showNameModal(); // Volta para o fluxo de verificação do último jogador/nome
+            showNameModal(); 
         }
 
-        // --- FUNÇÕES DE RANKING ---
-
-        // Função para obter o ranking do localStorage
         function getRanking() {
             const ranking = localStorage.getItem('bombRanking');
             return ranking ? JSON.parse(ranking) : [];
         }
 
-        // Função para salvar uma entrada no ranking (agora para todos os jogos)
         function saveRankingEntry(name, score, totalQuestions, time, difficulty) {
             let ranking = getRanking();
             const newEntry = {
@@ -784,35 +770,28 @@
                 date: new Date().toISOString()
             };
 
-            // Tenta encontrar uma entrada existente para o mesmo jogador e dificuldade
             const existingEntryIndex = ranking.findIndex(
                 entry => entry.name === name && entry.difficulty === difficulty
             );
 
             if (existingEntryIndex > -1) {
-                // Se o novo resultado é melhor, atualiza a entrada existente
+           
                 const existingEntry = ranking[existingEntryIndex];
-                // Critério de "melhor": maior score OU (mesmo score E menor tempo)
+              
                 if (newEntry.score > existingEntry.score || 
                     (newEntry.score === existingEntry.score && newEntry.time < existingEntry.time)) {
-                    ranking[existingEntryIndex] = newEntry; // Substitui pela nova entrada
+                    ranking[existingEntryIndex] = newEntry; 
                     console.log(`Ranking atualizado para ${name} no nível ${difficulty}: Melhor tempo/score!`);
                 } else {
                     console.log(`Resultado de ${name} no nível ${difficulty} não é melhor que o existente. Não atualizado.`);
                 }
             } else {
-                // Se não existe, adiciona a nova entrada
                 ranking.push(newEntry);
                 console.log(`Nova entrada no ranking para ${name} no nível ${difficulty}.`);
             }
 
-            // Ordena o ranking global pelo critério principal
             sortRanking(ranking);
 
-            // Limita o número de entradas globais no ranking (top X)
-            // Certifica-se de que o ranking sempre tenha no máximo MAX_RANKING_ENTRIES
-            // Mantenha esta linha para limitar o tamanho do ranking geral se desejar um "top 10" global.
-            // Se você quiser manter todos os resultados, remova ou comente esta linha.
             if (ranking.length > MAX_RANKING_ENTRIES) {
                 ranking = ranking.slice(0, MAX_RANKING_ENTRIES);
             }
