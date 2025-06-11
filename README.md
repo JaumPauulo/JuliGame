@@ -28,7 +28,7 @@
 
 ## 📂 Estrutura do Projeto
 
-- `meu.html`: Arquivo principal contendo toda a lógica e interface do jogo.
+- `index.html`: Arquivo principal contendo toda a lógica e interface do jogo.
 
 ## 📌 Observações
 
